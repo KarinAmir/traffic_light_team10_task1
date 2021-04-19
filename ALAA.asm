@@ -1,0 +1,87 @@
+$NOMOD51	 ;to suppress the pre-defined addresses by keil
+$include (C8051F020.INC)		; to declare the device peripherals	with it's addresses
+
+TABLE EQU 100H
+		ORG 0
+		MOV A, #0FFH
+		MOV P1, A
+		MOV R6, #32
+		MOV R5, #03H
+		SETB P1.0
+		CLR P1.1
+MAIN:	MOV A, R5
+		MOV DPTR, #TABLE
+		MOV R1, A
+      	MOV R0, #00H
+LOOP: 	MOV A, R0														 
+		MOVC A, @A+DPTR
+	 	MOV P2, A
+		MOV A,R1
+		MOVC A, @A+DPTR
+		MOV P0, A
+		MOV A, R6
+	  	MOV R2, A
+	  	MOV R3, #10
+	  	MOV R4, #0
+	  	ACALL DELAY
+		DEC R0
+		CJNE R0, #0FFH, LOOP	  	
+SUB1:	DEC R1
+		MOV R0, #09H
+		CJNE R1,#0FFH, LOOP
+		CPL P1.0
+		CPL P1.1
+		JMP MAIN
+SBT:	DEC	R5
+		MOV R3, #0
+		MOV R4, #0
+		ACALL DELAY2
+		ACALL DELAY2
+		JMP MAIN
+DVT:	MOV A, R6
+		MOV B, #02
+		DIV AB
+		MOV R6, A
+		MOV R3, #0
+		MOV R4, #0
+		ACALL DELAY2
+		ACALL DELAY2
+		RET
+MTV:	MOV A, R6
+		MOV B, #02
+		MUL AB
+		MOV R6, A
+		MOV R3, #0
+		MOV R4, #0
+		ACALL DELAY2
+		ACALL DELAY2
+		RET
+ADR:	INC	R5
+		MOV R3, #0
+		MOV R4, #0
+		ACALL DELAY2
+		ACALL DELAY2
+		JMP MAIN
+DELAY: 	JNB P1.4, ADR
+		JNB P1.5, SBT
+		JNB P1.7, MTV
+		JNB P1.6, DVT
+		JNB P1.3, RST
+		DJNZ R4, DELAY
+	   	DJNZ R3, DELAY
+		MOV R3,#10 
+	   	DJNZ R2, DELAY
+		RET
+RST:	MOV R5, #03H
+		MOV R6, #32
+		MOV A, #0FFH
+		MOV P1, A
+		SETB P1.0
+		CLR P1.1
+		JMP MAIN																											
+DELAY2:	DJNZ R3, DELAY2
+		DJNZ R4, DELAY2
+		RET
+ORG TABLE
+DB 3FH, 06H, 5BH, 4FH, 66H, 6DH, 7DH, 07H, 7FH, 6FH
+END
